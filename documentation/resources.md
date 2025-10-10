@@ -4,7 +4,7 @@
 - https://love2d.org/wiki/Main_Page (LOVE2D Docs)
 
 ## DevJeeper Playlists (**Main Playlist Here**)
-- https://m.youtube.com/playlist?list=PL1A1gsSe2tMxngwl-CU1MCX7kmbLf4P5O (Main Playlist)
+- https://m.youtube.com/playlist?list=PL1A1gsSe2tMxngwl-CU1MCX7kmbLf4P5O (Main Platformer Playlist)
   - https://www.youtube.com/playlist?list=PL1A1gsSe2tMzxf54D1OooafEnADpjZlP7 (Quick Playlist on Game Dev)
 
 ## Challacade Playlists
