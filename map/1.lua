@@ -70,6 +70,35 @@ return {
       wangsets = {},
       tilecount = 25,
       tiles = {}
+    },
+    {
+      name = "Mario",
+      firstgid = 90,
+      class = "",
+      tilewidth = 16,
+      tileheight = 16,
+      spacing = 0,
+      margin = 0,
+      columns = 52,
+      image = "../assets/Mario1/Characters/Mario.png",
+      imagewidth = 832,
+      imageheight = 32,
+      objectalignment = "unspecified",
+      tilerendersize = "tile",
+      fillmode = "stretch",
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 16,
+        height = 16
+      },
+      properties = {},
+      wangsets = {},
+      tilecount = 104,
+      tiles = {}
     }
   },
   layers = {
@@ -142,7 +171,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -157,7 +186,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -172,7 +201,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -187,7 +216,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -202,7 +231,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -217,7 +246,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -232,7 +261,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = true
+            ["collidable"] = true
           }
         },
         {
@@ -247,7 +276,7 @@ return {
           rotation = 0,
           visible = true,
           properties = {
-            ["colidable"] = false
+            ["collidable"] = true
           }
         }
       }
