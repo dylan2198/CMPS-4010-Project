@@ -106,18 +106,19 @@ function player:beginContact(a, b, collision)
     local nx, ny = collision:getNormal()
     if a == self.physics.fixture then -- if the player is the 'A' fixture
         if ny > 0 then -- A (player) collided with B (ground)
-            self:land()
+            self:land(collision) -- passing collision object to player.land 
         end
     elseif b == self.physics.fixture then
         if ny < 0 then -- B (player) collided with A (ground)
-            self:land()
+            self:land(collision)
         end
     end
 end
 
-function player:land()
+function player:land(collision)
+    self.currentGroundCollision = collision -- when player lands on another fixture, assign the current collision(Contact) object to a player attribute; this contains information about the colliding objects
     self.y_vel = 0 -- player is no longer falling; fixes issue where player couldn't move because of constant increasing of y_vel
-    self.grounded = true
+    self.grounded = true -- player landed on a fixture, so player is grounded
 end
 
 function player:jump(key)
@@ -127,8 +128,14 @@ function player:jump(key)
     end
 end
 
-function player:endContact(a, b, collision)
-    self.grounded = false
+function player:endContact(a, b, collision) -- runs when the player is no longer contacting another fixture
+    -- self.grounded = false -- only having this line is wrong because this is setting the players grounded boolean to false no matter what fixtures have stopped colliding; this would introduce bugs as we progress
+    if a == self.physics.fixture or b == self.physics.fixture then -- checks to see if the player is one of the fixture that activated endContact() callback fn
+        if self.currentGroundCollision == collision then -- if collision objects match, the player has stopped colliding with a fixture directly below it. thus we need to make the player not grounded and applyGravity()
+            self.grounded = false
+        end
+    end
+
 end
 
 function player:draw()
