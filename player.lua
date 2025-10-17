@@ -15,8 +15,14 @@ function player:load()
     self.acceleration = 4000 -- 200 / 4000 = .05 seconds to get to max speed
     self.friction = 3500 -- 200 / 3500 = .0571 seconds to come to full stop
     self.gravity = 1500
-    self.jump_amount = -500
+    self.jump_amount = -350
     self.grounded = false
+    self.jump_count = 0
+    self.max_jumps = 2 -- allows for double jumps
+    self.jump_timer = 0 -- tracks how long the jump key has been held
+    self.jump_time_max = 0.15 -- -- max seconds for extra upward force
+    self.jump_hold = false -- is the jump key currently held
+
 
     -- table to hold players physical collision information;
     -- player physics objects are composed of 3 parts in LOVE2D:
@@ -34,7 +40,18 @@ function player:update(dt)
     self:syncPhysics()
     self:move(dt)
     self:applyGravity(dt)
-    --self:applyFriction(dt)
+    -- self:applyFriction(dt)
+
+
+     -- Variable jump height: if player holds jump, keep upward force for a short time
+    if self.jump_hold then
+        self.jump_timer = self.jump_timer + dt
+        if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
+            self.y_vel = self.jump_amount  -- keeps upward velocity for "floaty" feel
+        else
+            self.jump_hold = false
+        end
+    end
 end
 
 function player:applyGravity(dt)
@@ -118,15 +135,30 @@ end
 function player:land(collision)
     self.currentGroundCollision = collision -- when player lands on another fixture, assign the current collision(Contact) object to a player attribute; this contains information about the colliding objects
     self.y_vel = 0 -- player is no longer falling; fixes issue where player couldn't move because of constant increasing of y_vel
+    self.jump_count = 0 -- reset jump count upon landing
     self.grounded = true -- player landed on a fixture, so player is grounded
 end
 
 function player:jump(key)
-    if (key == 'w' or key == 'up') and self.grounded then
-        self.y_vel = self.jump_amount
-        self.grounded = false
+    if key == 'w' or key == 'up' then
+        if self.jump_count < self.max_jumps then
+            self.y_vel = self.jump_amount
+
+            -- optional: make second jump slightly weaker
+            if self.jump_count == 1 then
+                self.y_vel = self.y_vel * 0.15
+            end
+
+            self.grounded = false
+            self.jump_count = self.jump_count + 1
+
+            -- start tracking jump hold
+            self.jump_hold = true
+            self.jump_timer = 0
+        end
     end
 end
+
 
 function player:endContact(a, b, collision) -- runs when the player is no longer contacting another fixture
     -- self.grounded = false -- only having this line is wrong because this is setting the players grounded boolean to false no matter what fixtures have stopped colliding; this would introduce bugs as we progress
