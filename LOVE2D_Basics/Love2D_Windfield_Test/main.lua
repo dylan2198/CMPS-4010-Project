@@ -1,5 +1,5 @@
 function love.load()
-    wf = require('libraries.windfield.windfield')
+    wf = require('libraries.windfield2.windfield')
 
     -- first step to working with LOVE physics is to create a world
     -- a world is a space where physics objects exist, and we use the world to create objects
