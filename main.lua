@@ -2,6 +2,8 @@
 
 local STI = require('libraries.sti') -- STI library; useful for loading Tiled maps. also has some nice love.physics integration with Tiled "colidables" objects
 require('player')
+love.graphics.setDefaultFilter('nearest','nearest')
+
 
 function love.load()
     map = STI('map/1.lua', {"box2d"}) -- load in map. also tells sti we will use box2d physics engine
@@ -31,6 +33,9 @@ function love.draw()
     love.graphics.scale(2, 2) -- scales entire coordinate system by 2; this will be for objects that are not apart of the map from Tiled
     player:draw() -- player gets scaled by 2x
     love.graphics.pop() -- pops coordinate system in transformation stack (coord system before 2x scaling); we do this so we can draw objects that we don't want to 2x scale after love.graphics.pop()
+    -- love.graphics.print('self.quad_width = ' .. player.quad_width, 10, 10)
+    -- love.graphics.print('self.quad_height = ' .. player.quad_height, 10, 30)
+
 
 end
 
