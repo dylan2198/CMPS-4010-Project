@@ -22,7 +22,7 @@ function player:load()
     self.jump_timer = 0 -- tracks how long the jump key has been held
     self.jump_time_max = 0.15 -- -- max seconds for extra upward force
     self.jump_hold = false -- is the jump key currently held
-
+    self.coins = 0
 
     -- table to hold players physical collision information;
     -- player physics objects are composed of 3 parts in LOVE2D:
@@ -34,6 +34,11 @@ function player:load()
     self.physics.body:setFixedRotation(true)
     self.physics.shape = love.physics.newRectangleShape(self.width, self.height) -- defining the shape of the physical body. used to dictate player collisions
     self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
+end
+
+function player:incrementCoins()
+    self.coins = self.coins + 1
+    print("Coins collected: " .. self.coins)
 end
 
 function player:update(dt)

@@ -78,6 +78,7 @@ function Coin:beginContact(a, b, collision)
         if a == coin.physics.fixture or b == coin.physics.fixture then
             if a == player.physics.fixture or b == player.physics.fixture then
                 print("Coin collected!")
+                player:incrementCoins()
                 coin.toBeRemoved = true
                 table.remove(ActiveCoins, i)
                 return true
