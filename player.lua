@@ -22,6 +22,7 @@ function player:load()
     self.jump_timer = 0 -- tracks how long the jump key has been held
     self.jump_time_max = 0.15 -- -- max seconds for extra upward force
     self.jump_hold = false -- is the jump key currently held
+    self.coins = 0
     self.state = 'idle'
     self.form = 'small_mario'
     self.direction = 'right'
@@ -29,6 +30,7 @@ function player:load()
     self.quad_height = 0
 
     self:loadAssets()
+
     -- table to hold players physical collision information;
     -- player physics objects are composed of 3 parts in LOVE2D:
     -- Body -> “where the player is and how it moves”
@@ -139,6 +141,11 @@ function player:loadAssets()
     self.animations.current_quad = self.animations.idle.small_mario.quads[1] -- default player
 end
 
+
+function player:incrementCoins()
+    self.coins = self.coins + 1
+    print("Coins collected: " .. self.coins)
+end
 
 function player:update(dt)
     self:setState()
