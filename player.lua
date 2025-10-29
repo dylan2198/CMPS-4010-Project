@@ -265,6 +265,14 @@ end
 
 function player:syncPhysics()
     self.x, self.y = self.physics.body:getPosition() -- syncs the physical body's position to the player's x and y coord position
+    -- Clamp player to map boundaries
+    local mapWidth, mapHeight = map.width * map.tilewidth, map.height * map.tileheight
+    local halfWidth, halfHeight = self.width / 2, self.height / 2
+
+    self.x = math.max(halfWidth, math.min(self.x, mapWidth - halfWidth))
+    self.y = math.max(halfHeight, math.min(self.y, mapHeight - halfHeight))
+
+    self.physics.body:setPosition(self.x, self.y)
     self.physics.body:setLinearVelocity(self.x_vel, self.y_vel) 
     -- the line above makes the physical body actually move. it uses our player's velocity variables; i.e. this will affect the body's movement based on user keyboard input, collisions, etc
 end
