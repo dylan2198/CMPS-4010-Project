@@ -356,3 +356,5 @@ function player:draw()
     --love.graphics.draw(mario, self.animations.current_quad, self.x, self.y, 0, scale_x, 1, self.small_mario_quads.frame_width / 2, self.small_mario_quads.frame_height / 2) 
     love.graphics.draw(mario, self.animations.current_quad, self.x, self.y, 0, scale_x, 1, self.quad_width / 2, self.quad_height / 2)
 end
+
+return player

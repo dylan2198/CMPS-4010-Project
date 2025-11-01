@@ -5,6 +5,7 @@ love.graphics.setDefaultFilter('nearest','nearest')
 require('player')
 require('coin')
 require('gui')
+local Enemy = require('enemy')
 
 function love.load()
     local Camera = require('libraries.camera') -- camera library; useful for following player around map
@@ -24,6 +25,9 @@ function love.load()
     Coin:new(400, 200)
     Coin:new(500, 100)
     player:load()
+    Enemy.loadAssets()
+    Enemy.newRelativeToPlayer(400, 0, "goomba")
+    Enemy.newRelativeToPlayer(600, 0, "buzzybettle")
 end
 
 function love.update(dt)
@@ -31,6 +35,7 @@ function love.update(dt)
     player:update(dt)
     Coin:updateAll(dt)
     GUI:update(dt)
+    Enemy.updateAll(dt)
 
     -- Camera: follow player
     local cx, cy = player.x, player.y
@@ -59,8 +64,9 @@ function love.draw()
         -- everything drawn before push() and everything drawn after pop() are not affected by what runs between push() and pop()
         love.graphics.push() -- copies and pushes the pre-2x scaling of the COORDINATE SYSTEM to transformation stack
         love.graphics.scale(2, 2) -- scales entire coordinate system by 2; this will be for objects that are not apart of the map from Tiled
-        player:draw() -- player gets scaled by 2x
-        Coin:drawAll()
+            player:draw() -- player gets scaled by 2x
+            Coin:drawAll()
+            Enemy.drawAll()
         love.graphics.pop() -- pops coordinate system in transformation stack (coord system before 2x scaling); we do this so we can draw objects that we don't want to 2x scale after love.graphics.pop()
         -- love.graphics.print('self.quad_width = ' .. player.quad_width, 10, 10)
         -- love.graphics.print('self.quad_height = ' .. player.quad_height, 10, 30)
