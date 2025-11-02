@@ -81,6 +81,7 @@ end
 function beginContact(a, b, collision)
     if Coin:beginContact(a, b, collision) then return end
     player:beginContact(a, b, collision)
+    Enemy.beginContact(a, b, collision)
 end
 
 function endContact(a, b, collision)
