@@ -10,7 +10,7 @@ function player:load()
     -- player velocity variables for movement; 0 by default so player doesn't move by default
     self.x_vel = 0
     self.y_vel = 0
-    self.max_speed = 200 -- how many pixels/sec the player is able to move
+    self.max_speed = 175 -- how many pixels/sec the player is able to move
     -- to avoid player going from 0 pixels/sec to 200 pixels/sec instantly we use the two vars below:
     self.acceleration = 4000 -- 200 / 4000 = .05 seconds to get to max speed
     self.friction = 3500 -- 200 / 3500 = .0571 seconds to come to full stop
@@ -18,7 +18,7 @@ function player:load()
     self.jump_amount = -350
     self.grounded = false
     self.jump_count = 0
-    self.max_jumps = 2 -- allows for double jumps
+    self.max_jumps = 1 -- allows for double jumps
     self.jump_timer = 0 -- tracks how long the jump key has been held
     self.jump_time_max = 0.15 -- -- max seconds for extra upward force
     self.jump_hold = false -- is the jump key currently held
@@ -69,7 +69,7 @@ function player:loadAssets()
     -- end
     
 
-    self.animations = {timer = 0, rate = 0.19}
+    self.animations = {timer = 0, rate = 0.12}
 
     -- probably will add smallMarioRun, normalMarioRun, fireMarioRun, etc inner tables here later
     self.animations.idle = {
@@ -265,14 +265,19 @@ end
 
 function player:syncPhysics()
     self.x, self.y = self.physics.body:getPosition() -- syncs the physical body's position to the player's x and y coord position
-    -- Clamp player to map boundaries
+    
+    -- Clamp player to map boundaries; THIS IS GOOD, BUT MAY NEED TO BE MODIFIED, LEAVE DISABLED FOR NOW.
+    --[[
     local mapWidth, mapHeight = map.width * map.tilewidth, map.height * map.tileheight
     local halfWidth, halfHeight = self.width / 2, self.height / 2
 
     self.x = math.max(halfWidth, math.min(self.x, mapWidth - halfWidth))
     self.y = math.max(halfHeight, math.min(self.y, mapHeight - halfHeight))
-
     self.physics.body:setPosition(self.x, self.y)
+    --]]
+
+ 
+
     self.physics.body:setLinearVelocity(self.x_vel, self.y_vel) 
     -- the line above makes the physical body actually move. it uses our player's velocity variables; i.e. this will affect the body's movement based on user keyboard input, collisions, etc
 end

@@ -8,9 +8,12 @@ require('gui')
 local Enemy = require('enemy')
 
 function love.load()
-    local Camera = require('libraries.camera') -- camera library; useful for following player around map
-    camera = Camera:new()
-    map = STI('map/1.lua', {"box2d"}) -- load in map. also tells sti we will use box2d physics engine
+    --local Camera = require('libraries.camera') -- camera library; useful for following player around map
+    --camera = Camera:new()
+    camera = require('libraries.camera')
+    cam = camera()
+    map = STI('map/level1-1.lua', {"box2d"}) -- load in map. also tells sti we will use box2d physics engine
+
     world = love.physics.newWorld(0, 0) -- creates a new physics simulation world with no gravity; a world is a container where physical objects exists
     world:setCallbacks(beginContact, endContact) -- setting callback fns to be called when fixtures collide / separate after collision
     map:box2d_init(world)
@@ -18,8 +21,10 @@ function love.load()
     -- This connects Tiled objects (with the "colidable" property) to the Box2D engine as static bodies.
     -- It automatically creates immovable collision shapes instead of manually looping through objects to define them (as seen in LOVE2D_Basics directory)
     -- Provided by STI's Box2D plugin; integrates the map with the physics world.
-    map.layers.solids.visible = false
-    background = love.graphics.newImage('assets/Mario1/Misc/background.png')
+    map.layers.ground_blocks.visible = false
+    background = love.graphics.newImage('assets/Mario1/Misc/background1.png')
+    background:setWrap("repeat", "clamp")
+    bg_quad = love.graphics.newQuad(0, 0, map.width * map.tilewidth, 720, background:getDimensions())
     GUI:load()
     Coin:new(300, 200)
     Coin:new(400, 200)
@@ -36,42 +41,84 @@ function love.update(dt)
     Coin:updateAll(dt)
     GUI:update(dt)
     Enemy.updateAll(dt)
+    cam:lookAt(player.x * 2, player.y)
 
+
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+
+    if cam.x < w/2 then
+        cam.x = w/2
+    end
+
+    if cam.y < h/2 then
+        cam.y = h/2
+    end
+
+    local map_width = map.width * map.tilewidth
+    local map_height = map.height * map.tileheight
+
+    -- right border
+    -- if cam.x > (map_width - w/2) then
+    --     cam.x = (map_width - w/2)
+    -- end
+
+    -- if cam.y > (map_height - h/2) then
+    --     cam.y = (map_height - h/2)
+    -- end
+
+
+    -- [[
     -- Camera: follow player
-    local cx, cy = player.x, player.y
+    --local cx, cy = player.x, player.y
 
     -- Optional: clamp camera to map boundaries
-    local mapWidth, mapHeight = map.width * map.tilewidth * 2, map.height * map.tileheight * 2
-    local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
+    --local mapWidth, mapHeight = map.width * map.tilewidth * 2, map.height * map.tileheight * 2
+    --local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
-    cx = math.max(cx, screenW / 2)
-    cx = math.min(cx, mapWidth - screenW / 2)
-    cy = math.max(cy, screenH / 2)
-    cy = math.min(cy, mapHeight - screenH / 2)
+    -- cx = math.max(cx, screenW / 2)
+    -- cx = math.min(cx, mapWidth - screenW / 2)
+    -- cy = math.max(cy, screenH / 2)
+    -- cy = math.min(cy, mapHeight - screenH / 2)
 
-    local lerp = 0.1
-    local camX, camY = camera.x, camera.y
-    camera:lookAt(camX + (cx - camX) * lerp, camY + (cy - camY) * lerp)
-
+    -- local lerp = 0.1
+    -- local camX, camY = camera.x, camera.y
+    -- camera:lookAt(camX + (cx - camX) * lerp, camY + (cy - camY) * lerp)
+    --]]
+    
+    
 end
 
 
 function love.draw()
-    camera:attach()
-        love.graphics.draw(background)
-        map:draw(0, 0, 2, 2) -- draw every layer of map, with 2x scaling for x and y values of layers (map was created with the idea that we will scale it by 2 in code)
-
+    --camera:attach()
+    
+    cam:attach()
+        --love.graphics.draw(background)
+        --love.graphics.draw(background, bg_quad, 0, 0)
+        love.graphics.draw(background, bg_quad, cam.x - love.graphics.getWidth() / 2, 0)
+        -- map:draw(0, 0, 2, 2) -- draw every layer of map, with 2x scaling for x and y values of layers (map was created with the idea that we will scale it by 2 in code)
+        -- map:drawLayer(map.layers['castle'])
+        -- map:drawLayer(map.layers['grass'])
+        -- map:drawLayer(map.layers['test'])
+        -- map:drawLayer(map.layers['ground'])
         -- everything drawn before push() and everything drawn after pop() are not affected by what runs between push() and pop()
         love.graphics.push() -- copies and pushes the pre-2x scaling of the COORDINATE SYSTEM to transformation stack
-        love.graphics.scale(2, 2) -- scales entire coordinate system by 2; this will be for objects that are not apart of the map from Tiled
+            love.graphics.scale(2, 2) -- scales entire coordinate system by 2; this will be for objects that are not apart of the map from Tiled
+            --map:draw(0, 0, 2, 2) -- draw every layer of map, with 2x scaling for x and y values of layers (map was created with the idea that we will scale it by 2 in code)
+            map:drawLayer(map.layers['castle'])
+            map:drawLayer(map.layers['grass'])
+            map:drawLayer(map.layers['test'])
+            map:drawLayer(map.layers['ground'])
             player:draw() -- player gets scaled by 2x
             Coin:drawAll()
             Enemy.drawAll()
         love.graphics.pop() -- pops coordinate system in transformation stack (coord system before 2x scaling); we do this so we can draw objects that we don't want to 2x scale after love.graphics.pop()
         -- love.graphics.print('self.quad_width = ' .. player.quad_width, 10, 10)
         -- love.graphics.print('self.quad_height = ' .. player.quad_height, 10, 30)
-    camera:detach()
-    GUI:draw()
+        --camera:detach()
+        GUI:draw()
+    cam:detach()
 end
 
 function love.keypressed(key) -- keypressed callback fn that runs if certain keys are pressed
