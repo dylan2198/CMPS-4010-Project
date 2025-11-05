@@ -15,7 +15,7 @@ function player:load()
     self.acceleration = 4000 -- 200 / 4000 = .05 seconds to get to max speed
     self.friction = 3500 -- 200 / 3500 = .0571 seconds to come to full stop
     self.gravity = 1500
-    self.jump_amount = -350
+    self.jump_amount = -525
     self.grounded = false
     self.jump_count = 0
     self.max_jumps = 1 -- allows for double jumps
@@ -157,14 +157,14 @@ function player:update(dt)
 
 
      -- Variable jump height: if player holds jump, keep upward force for a short time
-    if self.jump_hold then
-        self.jump_timer = self.jump_timer + dt
-        if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
-            self.y_vel = self.jump_amount  -- keeps upward velocity for "floaty" feel
-        else
-            self.jump_hold = false
-        end
-    end
+    -- if self.jump_hold then
+    --     self.jump_timer = self.jump_timer + dt
+    --     if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
+    --         self.y_vel = self.jump_amount  -- keeps upward velocity for "floaty" feel
+    --     else
+    --         self.jump_hold = false
+    --     end
+    -- end
 end
 
 function player:setForm()
@@ -302,13 +302,13 @@ function player:beginContact(a, b, collision)
         if ny > 0 then -- A (player) collided with B (ground)
             self:land(collision) -- passing collision object to player.land 
         elseif ny < 0 then
-            self.y_vel = 0 -- makes player fall quickly when bumping head; conflicts with current jump_hold logic
+            self.y_vel = -220 -- makes player fall quickly when bumping head; conflicts with current jump_hold logic
         end
     elseif b == self.physics.fixture then
         if ny < 0 then -- B (player) collided with A (ground)
             self:land(collision)
         elseif ny > 0 then
-            self.y_vel = 0
+            self.y_vel = -220
         end
     end
 end
