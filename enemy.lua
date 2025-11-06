@@ -280,20 +280,26 @@ function Enemy.beginContact(a, b, collision)
         ny = -ny
     end
     
-    -- Check if player is stomping from above
-    if otherFixture:getUserData() == nil or otherFixture:getBody() == player.physics.body then
+    -- Check if player is involved in collision
+    if otherFixture:getBody() == player.physics.body then
         if math.abs(ny) > 0.7 then
             if ny < 0 then
+                -- Player stomped enemy from above
                 enemy:crush()
                 if player then
                     player.y_vel = -200
                 end
                 return
             end
+        else
+            -- Side collision - player takes damage
+            if not enemy.crushed and not player.invincible then
+                player:takeDamage(enemy.x)  -- pass enemy position for knockback direction
+            end
         end
     end
     
-    -- Horizontal collisions flip direction
+    -- Horizontal collisions with walls flip direction
     if math.abs(nx) > 0.7 then
         enemy:flipDirection()
     end

@@ -41,6 +41,11 @@ function player:load()
     self.physics.body:setFixedRotation(true)
     self.physics.shape = love.physics.newRectangleShape(self.width, self.height) -- defining the shape of the physical body. used to dictate player collisions
     self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
+
+    self.invincible = false
+    self.invincibilityTime = 1.5  -- seconds of invincibility after hit
+    self.invincibilityTimer = 0
+    self.knockbackForce = 250  -- how hard mario gets pushed back
 end
 
 function player:loadAssets()
@@ -154,7 +159,7 @@ function player:update(dt)
     self:syncPhysics()
     self:move(dt)
     self:applyGravity(dt)
-
+    self:updateInvincibility(dt)
 
      -- Variable jump height: if player holds jump, keep upward force for a short time
     if self.jump_hold then
@@ -165,6 +170,41 @@ function player:update(dt)
             self.jump_hold = false
         end
     end
+end
+
+function player:updateInvincibility(dt)
+    if self.invincible then
+        self.invincibilityTimer = self.invincibilityTimer + dt
+        if self.invincibilityTimer >= self.invincibilityTime then
+            self.invincible = false
+            self.invincibilityTimer = 0
+        end
+    end
+end
+
+function player:takeDamage(enemyX)
+    if self.invincible then return end  -- can't take damage while invincible
+    
+    -- Lose a heart
+    GUI:loseHeart()
+    
+    -- Calculate knockback direction (away from enemy)
+    local knockbackDirection = 1
+    if self.x > enemyX then
+        knockbackDirection = 1  -- enemy on left, push right
+    else
+        knockbackDirection = -1  -- enemy on right, push left
+    end
+    
+    -- Apply knockback
+    self.x_vel = self.knockbackForce * knockbackDirection
+    self.y_vel = -200  -- bounce up
+    
+    -- Activate invincibility
+    self.invincible = true
+    self.invincibilityTimer = 0
+    
+    print("Mario hit! Invincible for " .. self.invincibilityTime .. " seconds")
 end
 
 function player:setForm()
@@ -346,14 +386,21 @@ function player:endContact(a, b, collision) -- runs when the player is no longer
 
 end
 
+-- Update the draw function to show invincibility
 function player:draw()
-    -- love.graphics.rectangle('fill', self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
-
+    -- Flicker effect during invincibility
+    if self.invincible then
+        -- Blink by skipping draw every other 0.1 seconds
+        local blink = math.floor(self.invincibilityTimer * 10) % 2
+        if blink == 0 then
+            return  -- skip drawing this frame for flicker effect
+        end
+    end
+    
     scale_x = 1
     if self.direction == 'left' then
-        scale_x = -1 -- flips quad/frame
+        scale_x = -1
     end
-    --love.graphics.draw(mario, self.animations.current_quad, self.x, self.y, 0, scale_x, 1, self.small_mario_quads.frame_width / 2, self.small_mario_quads.frame_height / 2) 
     love.graphics.draw(mario, self.animations.current_quad, self.x, self.y, 0, scale_x, 1, self.quad_width / 2, self.quad_height / 2)
 end
 
