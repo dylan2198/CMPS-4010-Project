@@ -8,8 +8,8 @@ function GUI:load()
     self.coins.frameWidth = imgHeight     -- since each frame is square
     self.coins.frameHeight = imgHeight
     self.coins.scale = 0.095
-    self.coins.x = 50
-    self.coins.y = 50
+    self.coins.x = 50 -- UPDATE THESE TO BE RELATIVE TO PLAYER.
+    self.coins.y = 50 -- UPDATE THESE TO BE RELATIVE TO PLAYER.
     self.font = love.graphics.newFont(18)
     love.graphics.setFont(self.font)
     self.coins.quad = love.graphics.newQuad(
