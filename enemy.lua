@@ -148,6 +148,7 @@ end
 function Enemy:crush()
     if self.crushed then return end
     
+    sounds.stomp:play()
     self.crushed = true
     self.crushTimer = 0
     self.currentFrame = 1

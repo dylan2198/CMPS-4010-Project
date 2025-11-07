@@ -29,6 +29,7 @@ function player:load()
     self.direction = 'right'
     self.quad_width = 0
     self.quad_height = 0
+    self.end_level_reached = false
     self:loadAssets()
     -- physics table to hold players physical collision information
     -- physics objects are composed of 3 parts in LOVE2D:
@@ -145,12 +146,14 @@ function player:incrementCoins()
 end
 
 function player:update(dt)
+    
     self:setState()
     self:setDirection()
     self:animate(dt)
     self:syncPhysics()
     self:move(dt)
     self:applyGravity(dt)
+    self:isLevelOver(map, dt) --maybe needs to be put somewhere else. possibly conflicting with update fn flow
 
 
     -- Variable jump height: if player holds jump, keep upward force for a short time
@@ -162,6 +165,24 @@ function player:update(dt)
     --         self.jump_hold = false
     --     end
     -- end
+end
+
+function player:isLevelOver(map, dt)
+    if map.name == 'level1-1' then
+        if self.x >= 3184 then
+            if not self.end_level_reached then
+                sounds.stage_clear:play()
+                self.end_level_reached = true
+            end
+
+            -- need to play flagpole sound first, then when mario reaches the bottom, play level comp music
+            -- code above plays end level music when mario reaches flagpole
+            -- now need to add a flagpole sprite, and apply gravity to mario when touching flagpole
+            -- disallow movement while falling on flagpole
+            -- then an automated movement towards the castle upon reaching bottom of flagpole
+            -- then body:destroy()
+        end
+    end
 end
 
 function player:setForm()
@@ -295,12 +316,14 @@ function player:beginContact(a, b, collision)
         if ny > 0 then -- A (player) collided with B (ground)
             self:land(collision) -- passing collision object to player.land 
         elseif ny < 0 then
+            sounds.bump:play()
             self.y_vel = -220 -- makes player fall quickly when bumping head
         end
     elseif b == self.physics.fixture then
         if ny < 0 then -- B (player) collided with A (ground)
             self:land(collision)
         elseif ny > 0 then
+            sounds.bump:play()
             self.y_vel = -220
         end
     end
@@ -318,6 +341,7 @@ function player:jump(key)
     if (key == 'w' or key == 'up') and self.can_jump then
         if self.jump_count < self.max_jumps then
             self.y_vel = self.jump_amount
+            sounds.jump_small:play()
 
             -- optional: make second jump slightly weaker
             -- if self.jump_count == 1 then
