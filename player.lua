@@ -2,19 +2,20 @@ player = {}
 
 function player:load()
     -- keeps track of player position
-    self.x = 16 -- hard coded values for now..
-    self.y = 340
+    self.x = 64
+    self.y = 208
     -- initial player dimensions (small mario)
     self.width = 16
     self.height = 16
-    -- player velocity variables for movement; 0 by default so player doesn't move by default
+    -- player velocity variables for movement
     self.x_vel = 0
     self.y_vel = 0
-    self.max_speed = 175 -- how many pixels/sec the player is able to move
+    self.max_speed = 175 -- pixels/sec
     -- to avoid player going from 0 pixels/sec to 200 pixels/sec instantly we use the two vars below:
     self.acceleration = 4000 -- 200 / 4000 = .05 seconds to get to max speed
     self.friction = 3500 -- 200 / 3500 = .0571 seconds to come to full stop
     self.gravity = 1500
+    self.can_jump = true
     self.jump_amount = -525
     self.grounded = false
     self.jump_count = 0
@@ -28,18 +29,16 @@ function player:load()
     self.direction = 'right'
     self.quad_width = 0
     self.quad_height = 0
-
     self:loadAssets()
-
-    -- table to hold players physical collision information;
-    -- player physics objects are composed of 3 parts in LOVE2D:
+    -- physics table to hold players physical collision information
+    -- physics objects are composed of 3 parts in LOVE2D:
     -- Body -> “where the player is and how it moves”
     -- Shape -> “what part of the player can hit or be hit”
     -- Fixture -> “glues the shape to the body so physics can act on it”
     self.physics = {}
-    self.physics.body = love.physics.newBody(world, self.x, self.y, "dynamic") -- a body keeps track of position, velocity, and rotations; i.e. where an object is and where it's going
+    self.physics.body = love.physics.newBody(world, self.x, self.y, "dynamic") -- a body keeps track of position, velocity, and rotations
     self.physics.body:setFixedRotation(true)
-    self.physics.shape = love.physics.newRectangleShape(self.width, self.height) -- defining the shape of the physical body. used to dictate player collisions
+    self.physics.shape = love.physics.newRectangleShape(self.width, self.height) -- shape is used to dictate player hitbox
     self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
 end
 
@@ -67,11 +66,9 @@ function player:loadAssets()
     --         mario:getDimensions()
     --     )
     -- end
-    
 
     self.animations = {timer = 0, rate = 0.12}
 
-    -- probably will add smallMarioRun, normalMarioRun, fireMarioRun, etc inner tables here later
     self.animations.idle = {
 
         small_mario = {
@@ -156,7 +153,7 @@ function player:update(dt)
     self:applyGravity(dt)
 
 
-     -- Variable jump height: if player holds jump, keep upward force for a short time
+    -- Variable jump height: if player holds jump, keep upward force for a short time
     -- if self.jump_hold then
     --     self.jump_timer = self.jump_timer + dt
     --     if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
@@ -210,7 +207,7 @@ function player:setNewFrame()
     end
 
     self.animations.current_quad = anim.quads[anim.current] -- gets current quad/frame
-    -- update quad_width and quad_height accordingly;
+    -- updates quad_width and quad_height accordingly;
         -- if we are in the small_mario table, these values should be a certain size for the love.graphics.draw offset variables in player:draw()
         -- if we are in the normal_mario table, these values should change accordingly
     self.quad_width = anim.frame_width
@@ -228,7 +225,6 @@ function player:move(dt)
     if love.keyboard.isDown('d', 'right') then
         if self.x_vel < self.max_speed then
             if self.x_vel + self.acceleration * dt < self.max_speed then -- ensures player body does not go over max_speed; dt is a fraction
-            -- self.state = 'run'?
             self.x_vel = self.x_vel + self.acceleration * dt 
             else
                 self.x_vel = self.max_speed
@@ -276,10 +272,8 @@ function player:syncPhysics()
     self.physics.body:setPosition(self.x, self.y)
     --]]
 
- 
-
-    self.physics.body:setLinearVelocity(self.x_vel, self.y_vel) 
-    -- the line above makes the physical body actually move. it uses our player's velocity variables; i.e. this will affect the body's movement based on user keyboard input, collisions, etc
+    -- affects player body movement based on user keyboard input, collisions, etc
+    self.physics.body:setLinearVelocity(self.x_vel, self.y_vel)
 end
 
 -- beginContact() and endContact() handle fixture collisions that the player is apart of
@@ -295,14 +289,13 @@ function player:beginContact(a, b, collision)
         -- if A collides with B from below (B collides into A from below) then normal vector = (0,-1); B contacted A from below
         -- whether a fixture is determined to be fixture A or B can seem random, so we check in the code below to see which one of A,B is the player fixture
         -- the two if-statements do the same thing; it is just checking if the player is landing on a fixture from above; if so, set self.y_vel = 0 and set self.grounded = true to stop the constant falling of the fixture
-    
     if self.grounded then return end -- if player already grounded, skip code below
     local nx, ny = collision:getNormal()
     if a == self.physics.fixture then -- if the player is the 'A' fixture
         if ny > 0 then -- A (player) collided with B (ground)
             self:land(collision) -- passing collision object to player.land 
         elseif ny < 0 then
-            self.y_vel = -220 -- makes player fall quickly when bumping head; conflicts with current jump_hold logic
+            self.y_vel = -220 -- makes player fall quickly when bumping head
         end
     elseif b == self.physics.fixture then
         if ny < 0 then -- B (player) collided with A (ground)
@@ -318,42 +311,41 @@ function player:land(collision)
     self.y_vel = 0 -- player is no longer falling; fixes issue where player couldn't move because of constant increasing of y_vel
     self.jump_count = 0 -- reset jump count upon landing
     self.grounded = true -- player landed on a fixture, so player is grounded
+    self.can_jump = true
 end
 
 function player:jump(key)
-    if key == 'w' or key == 'up' then
+    if (key == 'w' or key == 'up') and self.can_jump then
         if self.jump_count < self.max_jumps then
             self.y_vel = self.jump_amount
 
             -- optional: make second jump slightly weaker
-            if self.jump_count == 1 then
-                self.y_vel = self.y_vel * 0.15
-            end
+            -- if self.jump_count == 1 then
+            --     self.y_vel = self.y_vel * 0.15
+            -- end
 
-            self.grounded = false
-            self.jump_count = self.jump_count + 1
+            -- self.grounded = false
+            -- self.jump_count = self.jump_count + 1
 
-            -- start tracking jump hold
-            self.jump_hold = true
-            self.jump_timer = 0
+            -- -- start tracking jump hold
+            -- self.jump_hold = true
+            -- self.jump_timer = 0
         end
     end
 end
 
 
 function player:endContact(a, b, collision) -- runs when the player is no longer contacting another fixture
-    -- self.grounded = false -- only having this line is wrong because this is setting the players grounded boolean to false no matter what fixtures have stopped colliding; this would introduce bugs as we progress
     if a == self.physics.fixture or b == self.physics.fixture then -- checks to see if the player is one of the fixture that activated endContact() callback fn
         if self.current_ground_collision == collision then -- if collision objects match, the player has stopped colliding with a fixture directly below it. thus we need to make the player not grounded and applyGravity()
             self.grounded = false
+            self.can_jump = false -- stops player from being able to jump on air
         end
     end
 
 end
 
 function player:draw()
-    -- love.graphics.rectangle('fill', self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
-
     scale_x = 1
     if self.direction == 'left' then
         scale_x = -1 -- flips quad/frame
