@@ -1,5 +1,6 @@
 ---@diagnostic disable: duplicate-set-field, lowercase-global 
-
+WINDOW_WIDTH, WINDOW_HEIGHT = love.window.getDesktopDimensions()
+GAME_WIDTH, GAME_HEIGHT = 512, 480
 local STI = require('libraries.sti') -- STI library; useful for loading Tiled maps. also has some nice love.physics integration with Tiled "colidables" objects
 love.graphics.setDefaultFilter('nearest','nearest')
 require('player')
@@ -8,6 +9,8 @@ require('gui')
 local Enemy = require('enemy')
 
 function love.load()
+    push = require('libraries.push')
+    push:setupScreen(GAME_WIDTH, GAME_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {fullscreen = true})
     camera = require('libraries.camera')
     cam = camera()
     
@@ -48,28 +51,30 @@ function love.update(dt)
     Coin:updateAll(dt)
     GUI:update(dt)
     Enemy.updateAll(dt)
-    cam:lookAt(player.x * 2, player.y) -- player.x * 2 because of 2x game scaling in love.draw()
+    cam:lookAt((player.x * 2) + (love.graphics.getWidth() - GAME_WIDTH) / 2, player.y) -- player.x * 2 because of 2x game scaling in love.draw()
     cam:update(map)
 end
 
 
 function love.draw()
-    cam:attach()
-        love.graphics.draw(background, bg_quad, cam.x - love.graphics.getWidth() / 2, 0)
-        -- everything drawn before push() and everything drawn after pop() are not affected by what runs between push() and pop()
-        love.graphics.push() -- copies and pushes the pre-2x scaling of the coordinate system to transformation stack
-            love.graphics.scale(2, 2) -- scales everything within push() & pop() by 2x
-            -- draw map layers individually; have to do this for camera library
-            map:drawLayer(map.layers['castle'])
-            map:drawLayer(map.layers['grass'])
-            map:drawLayer(map.layers['test'])
-            map:drawLayer(map.layers['ground'])
-            player:draw()
-            Coin:drawAll()
-            Enemy.drawAll()
-        love.graphics.pop() -- pops the coordinate system stored in transformation stack (before 2x scaling); we do this so we can draw objects that we don't want to 2x scale after love.graphics.pop()
-        GUI:draw()
-    cam:detach()
+    push:start()
+        cam:attach()
+            love.graphics.draw(background, bg_quad, cam.x - love.graphics.getWidth() / 2, 0)
+            -- everything drawn before push() and everything drawn after pop() are not affected by what runs between push() and pop()
+            love.graphics.push() -- copies and pushes the pre-2x scaling of the coordinate system to transformation stack
+                love.graphics.scale(2, 2) -- scales everything within push() & pop() by 2x
+                -- draw map layers individually; have to do this for camera library
+                map:drawLayer(map.layers['castle'])
+                map:drawLayer(map.layers['grass'])
+                map:drawLayer(map.layers['test'])
+                map:drawLayer(map.layers['ground'])
+                player:draw()
+                Coin:drawAll()
+                Enemy.drawAll()
+            love.graphics.pop() -- pops the coordinate system stored in transformation stack (before 2x scaling); we do this so we can draw objects that we don't want to 2x scale after love.graphics.pop()
+            GUI:draw()
+        cam:detach()
+    push:finish()
 end
 
 function love.keypressed(key) -- keypressed callback fn that runs if certain keys are pressed
