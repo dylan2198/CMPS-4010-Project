@@ -6,6 +6,7 @@ love.graphics.setDefaultFilter('nearest','nearest')
 require('player')
 require('coin')
 require('gui')
+require('sounds')
 local Enemy = require('enemy')
 
 function love.load()
@@ -13,7 +14,7 @@ function love.load()
     push:setupScreen(GAME_WIDTH, GAME_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {fullscreen = true})
     camera = require('libraries.camera')
     cam = camera()
-    
+    sounds:loadSounds()
     map = STI('map/level1-1.lua', {"box2d"}) -- load in map. also tells sti we will use box2d physics engine
     world = love.physics.newWorld(0, 0) -- creates a new physics simulation world with no gravity; a world is a container where physical objects exists
     world:setCallbacks(beginContact, endContact) -- setting callback fns to be called when fixtures collide / separate after collision

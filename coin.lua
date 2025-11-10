@@ -18,7 +18,7 @@ function Coin:new(x, y)
     coin.scale = 0.03                     -- adjust size
 
     coin.physics = {}
-    coin.physics.body = love.physics.newBody(world, coin.x, coin.y, "static")
+    coin.physics.body = love.physics.newBody(world, coin.x, coin.y, 'static')
     coin.physics.shape = love.physics.newRectangleShape(coin.frameWidth * coin.scale, coin.frameHeight * coin.scale)
     coin.physics.fixture = love.physics.newFixture(coin.physics.body, coin.physics.shape)
     coin.physics.fixture:setSensor(true) -- makes fixture a sensor so player can pass through it
@@ -77,6 +77,7 @@ function Coin:beginContact(a, b, collision)
     for i, coin in ipairs(ActiveCoins) do
         if a == coin.physics.fixture or b == coin.physics.fixture then
             if a == player.physics.fixture or b == player.physics.fixture then
+                sounds.coin:play()
                 print("Coin collected!")
                 player:incrementCoins()
                 coin.toBeRemoved = true
