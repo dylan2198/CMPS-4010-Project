@@ -11,9 +11,10 @@ local Enemy = require('enemy')
 
 function love.load()
     push = require('libraries.push')
-    push:setupScreen(GAME_WIDTH, GAME_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {fullscreen = true})
+    push:setupScreen(GAME_WIDTH, GAME_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {fullscreen = false})
     camera = require('libraries.camera')
     cam = camera()
+
     sounds:loadSounds()
     map = STI('map/level1-1.lua', {"box2d"}) -- load in map. also tells sti we will use box2d physics engine
     world = love.physics.newWorld(0, 0) -- creates a new physics simulation world with no gravity; a world is a container where physical objects exists
@@ -30,13 +31,13 @@ function love.load()
     background:setWrap("repeat", "clamp")
     bg_quad = love.graphics.newQuad(0, 0, love.graphics.getWidth(), love.graphics.getHeight(), background:getDimensions())
 
+    player:load()
+    Enemy.loadAssets()
     GUI:load()
+    -- maybe place these coins behind blocks
     Coin:new(300, 200)
     Coin:new(400, 200)
     Coin:new(500, 100)
-
-    player:load()
-    Enemy.loadAssets()
     -- enemies able to walk over non-block areas; look into
     Enemy.newRelativeToPlayer(400, 0, "goomba")
     Enemy.newRelativeToPlayer(600, 0, "buzzybettle")
@@ -50,10 +51,10 @@ function love.update(dt)
     world:update(dt)
     player:update(dt)
     Coin:updateAll(dt)
-    GUI:update(dt)
     Enemy.updateAll(dt)
     cam:lookAt((player.x * 2) + (love.graphics.getWidth() - GAME_WIDTH) / 2, player.y) -- player.x * 2 because of 2x game scaling in love.draw()
     cam:update(map)
+    GUI:update(dt)
 end
 
 
@@ -80,6 +81,7 @@ end
 
 function love.keypressed(key) -- keypressed callback fn that runs if certain keys are pressed
     player:jump(key)
+    -- pipe code if 's' or down arrow pressed?
 end
 
 function beginContact(a, b, collision)

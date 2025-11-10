@@ -16,14 +16,15 @@ function player:load()
     self.friction = 3500 -- 200 / 3500 = .0571 seconds to come to full stop
     self.gravity = 1500
     self.can_jump = true
-    self.jump_amount = -525
+    self.jump_amount = -525 -- -325 may be a good default for small mario
     self.grounded = false
-    self.jump_count = 0
-    self.max_jumps = 1 -- allows for double jumps
-    self.jump_timer = 0 -- tracks how long the jump key has been held
-    self.jump_time_max = 0.15 -- -- max seconds for extra upward force
-    self.jump_hold = false -- is the jump key currently held
+    --self.jump_count = 0
+    --self.max_jumps = 1 -- allows for double jumps
+    --self.jump_timer = 0 -- tracks how long the jump key has been held
+    --self.jump_time_max = 0.15 -- -- max seconds for extra upward force
+    --self.jump_hold = false -- is the jump key currently held
     self.coins = 0
+    self.points = 0
     self.state = 'idle'
     self.form = 'small_mario'
     self.direction = 'right'
@@ -139,10 +140,14 @@ function player:loadAssets()
     self.animations.current_quad = self.animations.idle.small_mario.quads[1] -- default player
 end
 
-
 function player:incrementCoins()
     self.coins = self.coins + 1
     print("Coins collected: " .. self.coins)
+end
+
+function player:addPoints()
+    -- this could be used in a callback fn to give player points depending on certain fixture collisions
+    self.points = self.points + 100
 end
 
 function player:update(dt)
@@ -154,22 +159,20 @@ function player:update(dt)
     self:move(dt)
     self:applyGravity(dt)
     self:isLevelOver(map, dt) --maybe needs to be put somewhere else. possibly conflicting with update fn flow
-
-
     -- Variable jump height: if player holds jump, keep upward force for a short time
-    -- if self.jump_hold then
-    --     self.jump_timer = self.jump_timer + dt
-    --     if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
-    --         self.y_vel = self.jump_amount  -- keeps upward velocity for "floaty" feel
-    --     else
-    --         self.jump_hold = false
-    --     end
-    -- end
+        -- if self.jump_hold then
+        --     self.jump_timer = self.jump_timer + dt
+        --     if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
+        --         self.y_vel = self.jump_amount  -- keeps upward velocity for "floaty" feel
+        --     else
+        --         self.jump_hold = false
+        --     end
+        -- end
 end
 
 function player:isLevelOver(map, dt)
-    if map.name == 'level1-1' then
-        if self.x >= 3184 then
+    if map.properties.name == '1-1' then
+        if self.x >= 3168 then
             if not self.end_level_reached then
                 sounds.stage_clear:play()
                 self.end_level_reached = true
@@ -283,16 +286,10 @@ end
 function player:syncPhysics()
     self.x, self.y = self.physics.body:getPosition() -- syncs the physical body's position to the player's x and y coord position
     
-    -- Clamp player to map boundaries; THIS IS GOOD, BUT MAY NEED TO BE MODIFIED, LEAVE DISABLED FOR NOW.
-    --[[
-    local mapWidth, mapHeight = map.width * map.tilewidth, map.height * map.tileheight
-    local halfWidth, halfHeight = self.width / 2, self.height / 2
-
-    self.x = math.max(halfWidth, math.min(self.x, mapWidth - halfWidth))
-    self.y = math.max(halfHeight, math.min(self.y, mapHeight - halfHeight))
+    -- Clamp player to left-side map boundary
+    self.x = math.max(self.width / 2, self.x)
     self.physics.body:setPosition(self.x, self.y)
-    --]]
-
+    
     -- affects player body movement based on user keyboard input, collisions, etc
     self.physics.body:setLinearVelocity(self.x_vel, self.y_vel)
 end
@@ -317,14 +314,14 @@ function player:beginContact(a, b, collision)
             self:land(collision) -- passing collision object to player.land 
         elseif ny < 0 then
             sounds.bump:play()
-            self.y_vel = -220 -- makes player fall quickly when bumping head
+            self.y_vel = -100 -- makes player fall quickly when bumping head
         end
     elseif b == self.physics.fixture then
         if ny < 0 then -- B (player) collided with A (ground)
             self:land(collision)
         elseif ny > 0 then
             sounds.bump:play()
-            self.y_vel = -220
+            self.y_vel = -100
         end
     end
 end
@@ -332,29 +329,27 @@ end
 function player:land(collision)
     self.current_ground_collision = collision -- when player lands on another fixture, assign the current collision(Contact) object to a player attribute; this contains information about the colliding objects
     self.y_vel = 0 -- player is no longer falling; fixes issue where player couldn't move because of constant increasing of y_vel
-    self.jump_count = 0 -- reset jump count upon landing
     self.grounded = true -- player landed on a fixture, so player is grounded
     self.can_jump = true
+    --self.jump_count = 0 -- reset jump count upon landing
 end
 
 function player:jump(key)
     if (key == 'w' or key == 'up') and self.can_jump then
-        if self.jump_count < self.max_jumps then
-            self.y_vel = self.jump_amount
-            sounds.jump_small:play()
-
+        --if self.jump_count < self.max_jumps then
+        self.y_vel = self.jump_amount
+        sounds.jump_small:play()
             -- optional: make second jump slightly weaker
-            -- if self.jump_count == 1 then
-            --     self.y_vel = self.y_vel * 0.15
-            -- end
+                -- if self.jump_count == 1 then
+                --     self.y_vel = self.y_vel * 0.15
+                -- end
 
-            -- self.grounded = false
-            -- self.jump_count = self.jump_count + 1
+                -- self.grounded = false
+                -- self.jump_count = self.jump_count + 1
 
-            -- -- start tracking jump hold
-            -- self.jump_hold = true
-            -- self.jump_timer = 0
-        end
+                -- -- start tracking jump hold
+                -- self.jump_hold = true
+                -- self.jump_timer = 0
     end
 end
 
