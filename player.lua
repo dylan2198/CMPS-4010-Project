@@ -313,6 +313,7 @@ function player:beginContact(a, b, collision)
         if ny > 0 then -- A (player) collided with B (ground)
             self:land(collision) -- passing collision object to player.land 
         elseif ny < 0 then
+            self:handleBlocks()
             sounds.bump:play()
             self.y_vel = -100 -- makes player fall quickly when bumping head
         end
@@ -320,8 +321,41 @@ function player:beginContact(a, b, collision)
         if ny < 0 then -- B (player) collided with A (ground)
             self:land(collision)
         elseif ny > 0 then
+            self:handleBlocks()
             sounds.bump:play()
             self.y_vel = -100
+        end
+    end
+end
+
+function player:handleBlocks()
+    local mx, my = self.x, self.y
+    local head_x = mx
+    local head_y = my - 8 -- ensures we get correct tile later
+
+    -- convert to tile coordinates
+    local tile_x = math.floor(head_x / map.tilewidth + 1)
+    local tile_y = math.floor(head_y / map.tileheight)
+
+    local tile = map:getTileProperties('ground', tile_x, tile_y)
+
+    if tile and tile.type then
+        local tile_type = tile.type
+
+        if tile_type == 'brick' then
+            print('Hit brick at: ' .. tile_x .. ',' .. tile_y)
+            map:setLayerTile('ground', tile_x, tile_y, 39)
+            -- if self.form == 'supermario' then
+            --     map:setLayerTile('ground', tile_x, tile_y, 39) -- 39 is global id for an 'invisible' tile in tileset
+            -- end
+            -- destroy merged fixture
+            -- regen new fixture regions
+        elseif tile_type == 'mystery' then
+            print('Hit mystery block at: ' .. tile_x .. ', ' .. tile_y)
+            -- self:hitMysteryBlock()
+            map:setLayerTile('ground', tile_x, tile_y, 3) -- updates tile to be metal
+            --powerups:makeMushroom()
+
         end
     end
 end

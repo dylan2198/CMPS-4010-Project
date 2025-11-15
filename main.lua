@@ -16,15 +16,20 @@ function love.load()
     cam = camera()
 
     sounds:loadSounds()
-    map = STI('map/level1-1.lua', {"box2d"}) -- load in map. also tells sti we will use box2d physics engine
+    map = STI('map/level1-1.lua') -- load in map. also tells sti we will use box2d physics engine
     world = love.physics.newWorld(0, 0) -- creates a new physics simulation world with no gravity; a world is a container where physical objects exists
     world:setCallbacks(beginContact, endContact) -- setting callback fns to be called when fixtures collide / separate after collision
-    map:box2d_init(world)
+    --map:box2d_init(world)
     -- Initializes Box2D physics for the map using the given world.
     -- This connects Tiled objects (with the "collidable" property) to the Box2D engine as static bodies.
     -- It automatically creates immovable collision shapes instead of manually looping through objects to define them (as seen in LOVE2D_Basics directory)
     -- Provided by STI's Box2D plugin; integrates the map with the physics world.
-    map.layers.ground_blocks.visible = false
+    map.layers.collidables.visible = false
+
+    tile_layer = map.layers['ground']
+    collision_layer = map.layers['collidables']
+    fixture_to_tiles = {}
+    createCollisionFixtures()
 
     -- setup code to allow background to constantly repeat in love.draw()
     background = love.graphics.newImage('assets/Mario1/Misc/background1.png')
@@ -82,6 +87,47 @@ end
 function love.keypressed(key) -- keypressed callback fn that runs if certain keys are pressed
     player:jump(key)
     -- pipe code if 's' or down arrow pressed?
+end
+
+function createCollisionFixtures()
+    -- creates one singular static body to hold all tile fixtures
+    collision_body = love.physics.newBody(world, 0, 0, 'static')
+    
+    -- iterate through all objects defined in tiled, create merged fixtures for each
+    for _, object in pairs(collision_layer.objects) do
+        if object.shape == 'rectangle' then
+            -- creates one fixture for entire object
+            local shape = love.physics.newRectangleShape(object.x + (object.width / 2), object.y + (object.height / 2), object.width, object.height)
+            local fixture = love.physics.newFixture(collision_body, shape)
+
+            -- calculates which tiles this fixture covers
+            local start_x = math.floor(object.x / map.tilewidth)
+            local end_x = math.ceil((object.x + object.width) / map.tilewidth)
+            local start_y = math.floor(object.y / map.tileheight)
+            local end_y = math.ceil((object.y + object.height) / map.tileheight)
+
+            -- store the mapping between a fixture and its associated tiles
+            local tiles = {}
+            for ty = start_y, end_y - 1 do
+                for tx = start_x, end_x - 1 do
+                    table.insert(tiles, {x = tx, y = ty})
+                end
+            end
+
+            -- this or something like this could be used to rebuild the fixtures accordingly after breaking a block
+            fixture_to_tiles[fixture] = {
+                tiles = tiles,
+                bounds = {
+                    start_x = start_x,
+                    end_x = end_x,
+                    start_y = start_y,
+                    end_y = end_y
+                }
+            }
+        end
+
+    end
+
 end
 
 function beginContact(a, b, collision)
