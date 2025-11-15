@@ -66,6 +66,8 @@ end
 function Enemy.new(x, y, enemyType)
     local instance = setmetatable({}, Enemy)
     instance.x = x or 0
+    instance.leftMax = instance.x * -2
+    instance.rightMax = instance.x * 2
     instance.y = y or 0
     instance.enemyType = enemyType or "goomba"
 
@@ -149,7 +151,7 @@ function Enemy:crush()
     if self.crushed then return end
     
     sounds.stomp:play()
-    Player:addPoints()
+    Player:addPoints(100)
     self.crushed = true
     self.crushTimer = 0
     self.currentFrame = 1
@@ -163,6 +165,11 @@ end
 
 function Enemy:patrol(dt)
     if not self.physics.body or self.physics.body:isDestroyed() then return end
+    if self.x > self.rightMax then
+        self:flipDirection()
+    elseif self.x < self.leftMax then
+        self:flipDirection()
+    end
     self.physics.body:setLinearVelocity(self.speed * self.direction, 0)
 end
 

@@ -40,16 +40,24 @@ function love.load()
     Enemy.loadAssets()
     GUI:load()
     -- maybe place these coins behind blocks
-    Coin:new(300, 200)
-    Coin:new(400, 200)
-    Coin:new(500, 100)
+    --Coin:new(300, 200)
+    --Coin:new(400, 200)
+    --Coin:new(500, 100)
     -- enemies able to walk over non-block areas; look into
-    Enemy.newRelativeToPlayer(400, 0, "goomba")
-    Enemy.newRelativeToPlayer(600, 0, "buzzybettle")
-    Enemy.newRelativeToPlayer(800, 0, "buzzybettle")
-    Enemy.newRelativeToPlayer(1000, 0, "buzzybettle")
-    Enemy.newRelativeToPlayer(1200, 0, "buzzybettle")
-    Enemy.newRelativeToPlayer(1500, 0, "buzzybettle")
+    enemies = {}
+    for i = 1, 11 do
+        table.insert(enemies, Enemy.newRelativeToPlayer(i * 450, 0, 'goomba'))
+    end
+    for i = 1, 5 do
+        table.insert(enemies, Enemy.newRelativeToPlayer(i * 300, 0, 'buzzybettle'))
+    end
+    -- Enemy.newRelativeToPlayer(500, 0, "goomba")
+    -- Enemy.newRelativeToPlayer(600, 0, "buzzybettle")
+    -- Enemy.newRelativeToPlayer(800, 0, "buzzybettle")
+    -- Enemy.newRelativeToPlayer(1000, 0, "buzzybettle")
+    -- Enemy.newRelativeToPlayer(1200, 0, "buzzybettle")
+    -- Enemy.newRelativeToPlayer(1500, 0, "buzzybettle")
+    sounds.theme:play()
 end
 
 function love.update(dt)

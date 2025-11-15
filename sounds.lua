@@ -1,6 +1,8 @@
 sounds = {}
 
 function sounds:loadSounds()
+    sounds.theme = love.audio.newSource('assets/Mario1/Sounds/smb1-theme-song.mp3', 'stream')
+    sounds.theme:setVolume(.35)
     sounds.break_block = love.audio.newSource('assets/Mario1/Sounds/smb_breakblock.wav', 'static')
     sounds.bump = love.audio.newSource('assets/Mario1/Sounds/smb_bump.wav', 'static')
     sounds.coin = love.audio.newSource('assets/Mario1/Sounds/smb_coin.wav', 'static')

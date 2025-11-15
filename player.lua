@@ -4,6 +4,7 @@ function player:load()
     -- keeps track of player position
     self.x = 64
     self.y = 208
+    self.visible= true
     -- initial player dimensions (small mario)
     self.width = 16
     self.height = 16
@@ -145,9 +146,9 @@ function player:incrementCoins()
     print("Coins collected: " .. self.coins)
 end
 
-function player:addPoints()
+function player:addPoints(num)
     -- this could be used in a callback fn to give player points depending on certain fixture collisions
-    self.points = self.points + 100
+    self.points = self.points + num
 end
 
 function player:update(dt)
@@ -159,22 +160,17 @@ function player:update(dt)
     self:move(dt)
     self:applyGravity(dt)
     self:isLevelOver(map, dt) --maybe needs to be put somewhere else. possibly conflicting with update fn flow
-    -- Variable jump height: if player holds jump, keep upward force for a short time
-        -- if self.jump_hold then
-        --     self.jump_timer = self.jump_timer + dt
-        --     if self.jump_timer < self.jump_time_max and love.keyboard.isDown('w', 'up') then
-        --         self.y_vel = self.jump_amount  -- keeps upward velocity for "floaty" feel
-        --     else
-        --         self.jump_hold = false
-        --     end
-        -- end
+  
 end
+
 
 function player:isLevelOver(map, dt)
     if map.properties.name == '1-1' then
         if self.x >= 3168 then
             if not self.end_level_reached then
+                sounds.theme:stop()
                 sounds.stage_clear:play()
+                self:addPoints(5000)
                 self.end_level_reached = true
             end
 
@@ -184,6 +180,10 @@ function player:isLevelOver(map, dt)
             -- disallow movement while falling on flagpole
             -- then an automated movement towards the castle upon reaching bottom of flagpole
             -- then body:destroy()
+        end
+
+        if self.x >= 3264 then
+            self.visible = false
         end
     end
 end
@@ -354,8 +354,21 @@ function player:handleBlocks()
             print('Hit mystery block at: ' .. tile_x .. ', ' .. tile_y)
             -- self:hitMysteryBlock()
             map:setLayerTile('ground', tile_x, tile_y, 3) -- updates tile to be metal
-            --powerups:makeMushroom()
-
+            if tile_x == 16 and tile_y == 9 then
+                sounds.powerup_appears:play()
+                --powerups:makeMushroom()
+            end
+            local chance = math.random()
+            if chance <= 0.4 then
+                sounds.coin:play()
+                self:incrementCoins()
+                self:addPoints(100)
+            elseif chance <= 0.6 then
+                -- 20% chance nothing happens
+            else
+                sounds.powerup_appears:play()
+                --powerups:makeMushroom()
+            end
         end
     end
 end
@@ -404,6 +417,7 @@ function player:draw()
         scale_x = -1 -- flips quad/frame
     end
     --love.graphics.draw(mario, self.animations.current_quad, self.x, self.y, 0, scale_x, 1, self.small_mario_quads.frame_width / 2, self.small_mario_quads.frame_height / 2) 
+    if not self.visible then return end
     love.graphics.draw(mario, self.animations.current_quad, self.x, self.y, 0, scale_x, 1, self.quad_width / 2, self.quad_height / 2)
 end
 
