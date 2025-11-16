@@ -4,17 +4,17 @@ function player:load()
     -- keeps track of player position
     self.x = 64
     self.y = 208
-    self.visible= true
+    self.visible = true
     -- initial player dimensions (small mario)
     self.width = 16
     self.height = 16
     -- player velocity variables for movement
     self.x_vel = 0
     self.y_vel = 0
-    self.max_speed = 175 -- pixels/sec
+    self.max_speed = 200 -- pixels/sec
     -- to avoid player going from 0 pixels/sec to 200 pixels/sec instantly we use the two vars below:
-    self.acceleration = 4000 -- 200 / 4000 = .05 seconds to get to max speed
-    self.friction = 3500 -- 200 / 3500 = .0571 seconds to come to full stop
+    self.acceleration = 500 -- 200 / 4000 = .05 seconds to get to max speed
+    self.friction = 1000 -- 200 / 3500 = .0571 seconds to come to full stop
     self.gravity = 1500
     self.can_jump = true
     self.jump_amount = -525 -- -325 may be a good default for small mario
@@ -70,7 +70,7 @@ function player:loadAssets()
     --     )
     -- end
 
-    self.animations = {timer = 0, rate = 0.12}
+    self.animations = {timer = 0, rate = 0.052}
 
     self.animations.idle = {
 
@@ -152,15 +152,13 @@ function player:addPoints(num)
 end
 
 function player:update(dt)
-    
     self:setState()
     self:setDirection()
     self:animate(dt)
     self:syncPhysics()
     self:move(dt)
     self:applyGravity(dt)
-    self:isLevelOver(map, dt) --maybe needs to be put somewhere else. possibly conflicting with update fn flow
-  
+    self:isLevelOver(map, dt)
 end
 
 
@@ -172,18 +170,23 @@ function player:isLevelOver(map, dt)
                 sounds.stage_clear:play()
                 self:addPoints(5000)
                 self.end_level_reached = true
+                self.animations.timer = 0
             end
-
-            -- need to play flagpole sound first, then when mario reaches the bottom, play level comp music
-            -- code above plays end level music when mario reaches flagpole
-            -- now need to add a flagpole sprite, and apply gravity to mario when touching flagpole
-            -- disallow movement while falling on flagpole
-            -- then an automated movement towards the castle upon reaching bottom of flagpole
-            -- then body:destroy()
+        end
+        
+        if self.end_level_reached and self.x < 3264 then
+            self.can_jump = false
+            local vx, vy = self.physics.body:getLinearVelocity()
+            self.physics.body:setLinearVelocity(45, vy)
+            self.x_vel = 45 + self.acceleration * dt
         end
 
+        -- disappear mario, calculate final points
         if self.x >= 3264 then
             self.visible = false
+            self.points = self.points + GUI.timer * 50
+            GUI.timer = 0
+            GUI.counting = false
         end
     end
 end
@@ -246,7 +249,7 @@ end
 
 -- the function below just changes velocity based on keyboard input; player.physics.body is the actual object we control with keyboard input using this line in syncPhysics(): self.physics.body:setLinearVelocity(self.x_vel, self.y_vel) 
 function player:move(dt)
-    if love.keyboard.isDown('d', 'right') then
+    if love.keyboard.isDown('d', 'right') and not self.end_level_reached then
         if self.x_vel < self.max_speed then
             if self.x_vel + self.acceleration * dt < self.max_speed then -- ensures player body does not go over max_speed; dt is a fraction
             self.x_vel = self.x_vel + self.acceleration * dt 
@@ -254,7 +257,7 @@ function player:move(dt)
                 self.x_vel = self.max_speed
             end
         end
-    elseif love.keyboard.isDown('a', 'left') then
+    elseif love.keyboard.isDown('a', 'left') and not self.end_level_reached then
         if self.x_vel > self.max_speed * -1 then
             if self.x_vel - self.acceleration * dt > self.max_speed * -1 then
             self.x_vel = self.x_vel - self.acceleration * dt
@@ -314,7 +317,6 @@ function player:beginContact(a, b, collision)
             self:land(collision) -- passing collision object to player.land 
         elseif ny < 0 then
             self:handleBlocks()
-            sounds.bump:play()
             self.y_vel = -100 -- makes player fall quickly when bumping head
         end
     elseif b == self.physics.fixture then
@@ -322,7 +324,6 @@ function player:beginContact(a, b, collision)
             self:land(collision)
         elseif ny > 0 then
             self:handleBlocks()
-            sounds.bump:play()
             self.y_vel = -100
         end
     end
@@ -345,29 +346,35 @@ function player:handleBlocks()
         if tile_type == 'brick' then
             print('Hit brick at: ' .. tile_x .. ',' .. tile_y)
             map:setLayerTile('ground', tile_x, tile_y, 39)
+            sounds.break_block:play()
             -- if self.form == 'supermario' then
             --     map:setLayerTile('ground', tile_x, tile_y, 39) -- 39 is global id for an 'invisible' tile in tileset
+            --     sounds.break_block:play()
             -- end
             -- destroy merged fixture
             -- regen new fixture regions
         elseif tile_type == 'mystery' then
             print('Hit mystery block at: ' .. tile_x .. ', ' .. tile_y)
-            -- self:hitMysteryBlock()
             map:setLayerTile('ground', tile_x, tile_y, 3) -- updates tile to be metal
-            if tile_x == 16 and tile_y == 9 then
+            if map.properties.name == '1-1' and tile_x == 17 and tile_y == 10 then -- make first block in level1-1 contain a mushroom
+                sounds.bump:play()
                 sounds.powerup_appears:play()
                 --powerups:makeMushroom()
+                return
             end
             local chance = math.random()
             if chance <= 0.4 then
+                sounds.bump:play()
                 sounds.coin:play()
                 self:incrementCoins()
-                self:addPoints(100)
-            elseif chance <= 0.6 then
-                -- 20% chance nothing happens
+                self:addPoints(200)
+            elseif chance <= 0.7 then
+                sounds.bump:play()
+                -- 30% chance nothing happens
             else
+                sounds.bump:play()
                 sounds.powerup_appears:play()
-                --powerups:makeMushroom()
+                --powerups:makePowerup()
             end
         end
     end

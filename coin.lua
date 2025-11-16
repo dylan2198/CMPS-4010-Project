@@ -15,7 +15,7 @@ function Coin:new(x, y)
     coin.currentFrame = 1
     coin.animationTimer = 0
     coin.animationSpeed = 0.05           -- tweak for desired spin speed
-    coin.scale = 0.03                     -- adjust size
+    coin.scale = 0.020                   -- adjust size
 
     coin.physics = {}
     coin.physics.body = love.physics.newBody(world, coin.x, coin.y, 'static')
@@ -80,6 +80,7 @@ function Coin:beginContact(a, b, collision)
                 sounds.coin:play()
                 print("Coin collected!")
                 player:incrementCoins()
+                player:addPoints(200)
                 coin.toBeRemoved = true
                 table.remove(ActiveCoins, i)
                 return true

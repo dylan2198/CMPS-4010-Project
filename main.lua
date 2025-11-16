@@ -40,23 +40,28 @@ function love.load()
     Enemy.loadAssets()
     GUI:load()
     -- maybe place these coins behind blocks
-    --Coin:new(300, 200)
-    --Coin:new(400, 200)
-    --Coin:new(500, 100)
+    for i = 1, 7 do
+        j = math.random(1, 3)
+        Coin:new(i * 300, j * 60)
+    end
+    
     -- enemies able to walk over non-block areas; look into
+    -- ignore the gotos, for presentation purposes lol
     enemies = {}
-    for i = 1, 11 do
+    for i = 1, 6 do
+        if i == 3 or i == 4 then
+            goto continue
+        end
         table.insert(enemies, Enemy.newRelativeToPlayer(i * 450, 0, 'goomba'))
+        ::continue::
     end
     for i = 1, 5 do
+        if i == 5 then
+            goto continue
+        end
         table.insert(enemies, Enemy.newRelativeToPlayer(i * 300, 0, 'buzzybettle'))
+        ::continue::
     end
-    -- Enemy.newRelativeToPlayer(500, 0, "goomba")
-    -- Enemy.newRelativeToPlayer(600, 0, "buzzybettle")
-    -- Enemy.newRelativeToPlayer(800, 0, "buzzybettle")
-    -- Enemy.newRelativeToPlayer(1000, 0, "buzzybettle")
-    -- Enemy.newRelativeToPlayer(1200, 0, "buzzybettle")
-    -- Enemy.newRelativeToPlayer(1500, 0, "buzzybettle")
     sounds.theme:play()
 end
 

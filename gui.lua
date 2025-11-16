@@ -3,6 +3,8 @@ GUI = {}
 function GUI:load()
     self.font = love.graphics.newFont('assets/Fonts/super-mario-bros-nes.ttf', 12)
     self.timer = 400
+    self.counting = true
+    self.low_on_time = false
     self.positions = {}
     self.positions.points = (player.x * 2) - 48
     self.positions.coins = self.positions.points + 100
@@ -20,60 +22,29 @@ function GUI:load()
         self.coin.frameWidth, self.coin.frameHeight,
         imgWidth, imgHeight
     )
-
-    -- might do this later
-        -- self.coin.quads = { timer = 0, rate = 0.12
-        --     coin1 = love.graphics.newQuad(
-        --     0, 32,                              -- start of first frame
-        --     self.coin.frameWidth, self.coin.frameHeight,
-        --     imgWidth, imgHeight
-        --     ),
-
-        --     coin2 = love.graphics.newQuad(
-        --     16, 32,                              -- start of first frame
-        --     self.coin.frameWidth, self.coin.frameHeight,
-        --     imgWidth, imgHeight
-        --     ),
-
-        --     coin3 = love.graphics.newQuad(
-        --     32, 32,                              -- start of first frame
-        --     self.coin.frameWidth, self.coin.frameHeight,
-        --     imgWidth, imgHeight
-        --     ),
-
-        --     coin4 = love.graphics.newQuad(
-        --     48, 32,                              -- start of first frame
-        --     self.coin.frameWidth, self.coin.frameHeight,
-        --     imgWidth, imgHeight
-        --     )
-
-        -- }
-
-
 end
-
--- might do this later
-    -- function GUI:animate(dt)
-    --     self.coin.quads.timer = self.coin.quads.timer + dt -- framerate code here
-    --     if self.coin.quads.timer > elf.coin.quads.rate then -- frame has passed, setNewFrame()
-    --         self.animations.timer = 0
-    --         self:setNewFrame()
-    --     end
-    -- end
-
 
 function GUI:update(dt)
     -- print('cam.x: ',cam.x)
     -- print('(player.x * 2) + (love.graphics.getWidth() - GAME_WIDTH) / 2: ', (player.x * 2) + (love.graphics.getWidth() - GAME_WIDTH) / 2)
     -- print('player.x * 2: ',player.x * 2)
     -- this math is weird, but the print statements above at least give some insight as to why the code below works
-    if ((player.x * 2) + (love.graphics.getWidth() - GAME_WIDTH) / 2) == cam.x then 
+    if ((player.x * 2) + (love.graphics.getWidth() - GAME_WIDTH) / 2) == cam.x then
         self.positions.points = player.x * 2 - 176
         self.positions.coins = self.positions.points + 100
         self.positions.world = self.positions.coins + 100
         self.positions.time = self.positions.world + 100
     end
-    self.timer = self.timer - (1 * dt) -- decriments level timer
+    if not self.counting then return end -- stops timer decriment at end of level
+    self.timer = self.timer - (2 * dt) -- decriments level timer; faster than 1 second to mimic original smb1
+    self:checkTime()
+end
+
+function GUI:checkTime()
+    if self.timer <= 100 and not self.low_on_time  then
+        sounds.warning:play()
+        self.low_on_time = true
+    end
 end
 
 function GUI:draw()
