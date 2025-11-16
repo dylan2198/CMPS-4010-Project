@@ -15,10 +15,10 @@ function Coin:new(x, y)
     coin.currentFrame = 1
     coin.animationTimer = 0
     coin.animationSpeed = 0.05           -- tweak for desired spin speed
-    coin.scale = 0.03                     -- adjust size
+    coin.scale = 0.020                   -- adjust size
 
     coin.physics = {}
-    coin.physics.body = love.physics.newBody(world, coin.x, coin.y, "static")
+    coin.physics.body = love.physics.newBody(world, coin.x, coin.y, 'static')
     coin.physics.shape = love.physics.newRectangleShape(coin.frameWidth * coin.scale, coin.frameHeight * coin.scale)
     coin.physics.fixture = love.physics.newFixture(coin.physics.body, coin.physics.shape)
     coin.physics.fixture:setSensor(true) -- makes fixture a sensor so player can pass through it
@@ -77,8 +77,10 @@ function Coin:beginContact(a, b, collision)
     for i, coin in ipairs(ActiveCoins) do
         if a == coin.physics.fixture or b == coin.physics.fixture then
             if a == player.physics.fixture or b == player.physics.fixture then
+                sounds.coin:play()
                 print("Coin collected!")
                 player:incrementCoins()
+                player:addPoints(200)
                 coin.toBeRemoved = true
                 table.remove(ActiveCoins, i)
                 return true

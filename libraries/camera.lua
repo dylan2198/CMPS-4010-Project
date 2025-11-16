@@ -213,38 +213,28 @@ end
 
 -- custom addition to library
 function camera:update(map)
-	local screen_width = love.graphics.getWidth() -- 512 from conf.lua for now...
-    local screen_height = love.graphics.getHeight() -- 480
+	local screen_width = love.graphics.getWidth()
+    local screen_height = love.graphics.getHeight()
 
-	-- centers camera to middle of window width
-    if self.x < screen_width / 2 then
-        self.x = screen_width / 2
-    end
-
-	-- centers camera to middle of window height
+	-- centers camera to middle of game window 
+	if self.x < screen_width / 2 then
+		self.x = screen_width / 2
+	end
     if self.y < screen_height / 2 then
         self.y = screen_height / 2
     end
-
-    --local map_width = map.tilewidth * map.width * 2 -- for ex: 16 * 224 * 2 == 7168px for level1-1
     
-	if map.name == 'level1-1' then
+	if map.properties.name == '1-1' then
 		local main_map_end = (map.width - 16) * map.tilewidth * 2 -- (224 - 16) * 16 * 2 == 6656
     	--local pipe_area_start = main_map_end
     	--local pipe_area_end = map_width
 				
     	-- right border
-    	if cam.x > (main_map_end - screen_width / 2) then
-        	cam.x = (main_map_end - screen_width / 2)
+    	if self.x > ((main_map_end - screen_width / 2) + screen_width - GAME_WIDTH) then
+        	self.x = ((main_map_end - screen_width / 2) + screen_width - GAME_WIDTH)
     	end
-
-		-- hacky fix for left cam boundaries right now. 
-		-- may implement classic mario camera behavior later.
-		if cam.x < screen_width / 2 + 32 then
-			cam.x = screen_width / 2 + 32
-		end
 	end
-	--else if (map.name == 'level1-2')...
+	--else if map.properties.name == '1-2')...
 end
 
 -- the module

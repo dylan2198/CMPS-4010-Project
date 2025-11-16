@@ -1,0 +1,22 @@
+sounds = {}
+
+function sounds:loadSounds()
+    sounds.theme = love.audio.newSource('assets/Mario1/Sounds/smb1-theme-song.mp3', 'stream')
+    sounds.theme:setVolume(.25)
+    sounds.theme:setLooping(true)
+    sounds.warning = love.audio.newSource('assets/Mario1/Sounds/smb_warning.wav', 'static')
+    sounds.break_block = love.audio.newSource('assets/Mario1/Sounds/smb_breakblock.wav', 'static')
+    sounds.bump = love.audio.newSource('assets/Mario1/Sounds/smb_bump.wav', 'static')
+    sounds.coin = love.audio.newSource('assets/Mario1/Sounds/smb_coin.wav', 'static')
+    sounds.flagpole = love.audio.newSource('assets/Mario1/Sounds/smb_flagpole.wav', 'static')
+    sounds.jump_small = love.audio.newSource('assets/Mario1/Sounds/smb_jump-small.wav', 'static')
+    sounds.jump_small:setVolume(.60)
+    sounds.jump_super = love.audio.newSource('assets/Mario1/Sounds/smb_jump-super.wav', 'static')
+    sounds.kick_slide = love.audio.newSource('assets/Mario1/Sounds/smb_kick.wav', 'static')
+    sounds.mario_death = love.audio.newSource('assets/Mario1/Sounds/smb_mariodie.wav', 'static')
+    sounds.pipe = love.audio.newSource('assets/Mario1/Sounds/smb_pipe.wav', 'static')
+    sounds.powerup_appears = love.audio.newSource('assets/Mario1/Sounds/smb_powerup_appears.wav', 'static')
+    sounds.powerup = love.audio.newSource('assets/Mario1/Sounds/smb_powerup.wav', 'static')
+    sounds.stage_clear = love.audio.newSource('assets/Mario1/Sounds/smb_stage_clear.wav', 'static')
+    sounds.stomp = love.audio.newSource('assets/Mario1/Sounds/smb_stomp.wav', 'static')
+end
